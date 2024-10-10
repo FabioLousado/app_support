@@ -23,7 +23,6 @@ public class TicketController {
 
 	@GetMapping("/list/{role}/{mail}")
 	public List<Ticket> getTickets(@PathVariable String role, @PathVariable String mail) {
-		System.out.println(role);
 		return ticketService.getTickets(role, mail);
 	}
 	
