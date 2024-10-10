@@ -13,6 +13,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -36,9 +38,16 @@ public class Ticket {
 
 	@Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
 	private Timestamp date = new Timestamp(new Date().getTime());
+	
+	@Column
+	private Timestamp dateCloture;
 
 	@Column(nullable = false)
 	private String creerPar;
+	
+	@ManyToOne
+    @JoinColumn(name = "etat_id", nullable = false)
+	private Etat etat;
 	
 	@JsonProperty(value = "viewMessages")
 	public String consult() {

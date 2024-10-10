@@ -1,7 +1,5 @@
 package com.pst.support.controller;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
@@ -13,33 +11,25 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.pst.support.exception.ArgumentInvalidException;
-import com.pst.support.model.Message;
 import com.pst.support.model.Ticket;
-import com.pst.support.repository.MessageRepo;
-import com.pst.support.repository.TicketRepo;
+import com.pst.support.service.TicketService;
 
 @RestController
 @RequestMapping("/ticket")
 public class TicketController {
 
 	@Autowired
-	private TicketRepo ticketRepo;
-	
-	@Autowired
-	private MessageRepo messageRepo;
+	private TicketService ticketService;
 
-	@GetMapping
-	public List<Ticket> getTickets() {
-		return ticketRepo.findAll();
+	@GetMapping("/list/{role}/{mail}")
+	public List<Ticket> getTickets(@PathVariable String role, @PathVariable String mail) {
+		System.out.println(role);
+		return ticketService.getTickets(role, mail);
 	}
-
-	@GetMapping("/{id}")
-	public ResponseEntity<List<Message>> getTicketById(@PathVariable Long id){
-		var messages = messageRepo.findByTicketId(id);
-		
-		return ResponseEntity.ok(messages);
+	
+	@GetMapping("/{id}/{etatId}")
+	public ResponseEntity<Ticket> setTicketEtat(@PathVariable Long id, @PathVariable Long etatId) {
+	    return ticketService.updateTicketState(id, etatId);
 	}
 	
 	@PostMapping
@@ -47,17 +37,7 @@ public class TicketController {
 		var title = body.get("title");
 		var creerPar = body.get("creerPar");
 		
-		try {
-			var t = new Ticket();
-			t.setTitle(title);
-			t.setCreerPar(creerPar);
-			ticketRepo.save(t);
-			return ResponseEntity.created(new URI("/ticket/" + t.getId())).build();
-		}catch(ArgumentInvalidException ex) {
-			return ResponseEntity.badRequest().body(ex.getMessage());
-		} catch (URISyntaxException e) {
-			return ResponseEntity.badRequest().body(e.getMessage());
-		}
+		return ticketService.addTicket(title, creerPar);
 			
 
 	}

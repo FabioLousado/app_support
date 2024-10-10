@@ -27,24 +27,32 @@ public class FileService {
 	 * @throws IOException If there is an issue writing the file to the disk
 	 */
 	public String addFile(MultipartFile file) throws IOException {
-		if (file.isEmpty()) {
-			throw new IOException("Le fichier est vide");
-		}
+	    if (file.isEmpty()) {
+	        throw new IOException("Le fichier est vide");
+	    }
 
-		var correctedName = file.getOriginalFilename().replaceAll(" ", "_");
+	    // Définir le chemin relatif au répertoire du projet (par exemple, dans le dossier 'public/uploads')
+	    String projectRoot = System.getProperty("user.dir"); // Récupère le chemin racine du projet
+	    String filePathComplete = projectRoot + "/src/main/resources/static/uploads/"; // Chemin de destination dans le projet
 
-		Path dirPath = Paths.get(filePath);
-		if (!Files.exists(dirPath)) {
-			Files.createDirectories(dirPath); // Create directories if not present
-		}
+	    // Corriger le nom du fichier pour éviter les espaces
+	    String correctedName = file.getOriginalFilename().replaceAll(" ", "_");
 
-		// Create the file object with the correct path
-		File uploadedFile = new File(dirPath.toFile(), correctedName);
+	    Path dirPath = Paths.get(filePathComplete);
 
-		// Transfer the file to the destination path
-		file.transferTo(uploadedFile);
+	    // Crée les répertoires si non présents
+	    if (!Files.exists(dirPath)) {
+	        Files.createDirectories(dirPath);
+	    }
 
-		return uploadedFile.getAbsolutePath();
+	    // Créer l'objet fichier avec le chemin correct
+	    File uploadedFile = new File(dirPath.toFile(), correctedName);
+
+	    // Transférer le fichier au chemin de destination
+	    file.transferTo(uploadedFile);
+
+	    // Retourner le chemin absolu du fichier téléchargé
+	    return uploadedFile.getAbsolutePath();
 	}
 	
 	/**
