@@ -49,11 +49,13 @@ public class MessageController {
 	}
 
 	@PostMapping
-	public ResponseEntity<String> addMessage(@RequestParam(value = "content", required = false) String content,
-			@RequestParam(value = "envoyePar") String envoyePar, @RequestParam(value = "ticketId") Long ticketId,
-			@RequestParam(value = "file", required = false) MultipartFile file) throws URISyntaxException {
+	public ResponseEntity<List<Message>> addMessage(
+			@RequestParam(value = "content", required = false) String content,
+			@RequestParam(value = "envoyePar") String envoyePar, 
+			@RequestParam(value = "ticketId") Long ticketId,
+			@RequestParam(value = "files", required = false) List<MultipartFile> files) throws URISyntaxException {
 
-		return messageService.addMessage(content, envoyePar, ticketId, file);
+		return messageService.addMessage(content, envoyePar, ticketId, files);
 
 	}
 }

@@ -3,8 +3,11 @@ package com.pst.support.service;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -45,12 +48,18 @@ public class MessageService {
 		return messageRepo.save(message);
 	}
 	
+	public List<Message> saveMessages(List<Message> message) {
+		return messageRepo.saveAll(message);
+	}
+	
 	public List<Message> getMessagesByTicketId(Long ticketId) {
 		return messageRepo.findByTicketId(ticketId);
 	}
 	
 	public ResponseEntity<List<Message>> getMessagesByIdTicket(Long id){
-		var messages = messageRepo.findByTicketId(id);
+		var messages = messageRepo.findByTicketId(id).stream()
+	            .sorted(Comparator.comparing(Message::getDate))
+	            .collect(Collectors.toList());
 		
 		return ResponseEntity.ok(messages);
 	}
@@ -68,29 +77,49 @@ public class MessageService {
 	    }
 	}
 	
-	public ResponseEntity<String> addMessage(String content, 
-			String envoyePar, Long ticketId, MultipartFile file) throws URISyntaxException {
-
-		var m = new Message();
-		m.setContentOrFile(content, file);
-
-		if (m.isFile()) {
-			try {
-				var path = fileService.addFile(file);
-				m.setContent(path);
-			} catch (IOException e) {
-				return ResponseEntity.badRequest().body("Le fichier n'a pu être enregistré.");
-			}
+	private void addMessagesFiles(String content, 
+			String envoyePar, Long ticketId, List<MultipartFile> files, List<Message> listMessage) {
+		if(files != null) {
+			files.forEach(file -> {
+				try {
+					var m = new Message();
+					var path = fileService.addFile(file);
+					m.setEnvoyePar(envoyePar);
+					m.setTicketId(ticketId);
+					m.setFile(true);
+					m.setContent(path);
+					listMessage.add(m);
+				} catch (IOException e) {
+				}
+		});
 		}
+	}
+	
+	private void addMessageTicket(String content, 
+			String envoyePar, Long ticketId, List<Message> listMessage) {
+		if(content != null) {
+			var m = new Message();
+			m.setEnvoyePar(envoyePar);
+			m.setTicketId(ticketId);
+			m.setContent(content);
+			listMessage.add(m);
+		}
+	}
+	
+	public ResponseEntity<List<Message>> addMessage(String content, 
+			String envoyePar, Long ticketId, List<MultipartFile> files) throws URISyntaxException {
+
+		
+		List<Message> listMessage = new ArrayList<>();
 		
 		updateTicketStatusIfFirstSupportResponse(ticketId, envoyePar);
-
-		m.setEnvoyePar(envoyePar);
-		m.setTicketId(ticketId);
-
-		saveMessage(m);
 		
-		return ResponseEntity.created(new URI("/api/support/message/" + m.getId())).build();
+		addMessageTicket(content, envoyePar, ticketId, listMessage);
+		addMessagesFiles(content, envoyePar, ticketId, files, listMessage);
+		
+		saveMessages(listMessage);
+
+		return ResponseEntity.ok(listMessage);
 
 	}
 	
