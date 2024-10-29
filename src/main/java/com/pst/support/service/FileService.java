@@ -17,9 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class FileService {
 
-	@Value("${FILE_PATH}")
-	private String filePath;
-
 	/**
 	 * Saves the uploaded file to the specified file path.
 	 *

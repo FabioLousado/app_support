@@ -29,9 +29,11 @@ public class TicketService {
 	public List<Ticket> getTickets(String role, String mail) {
 	    LocalDateTime nowMinusTwoDays = LocalDateTime.now().minus(2, ChronoUnit.DAYS);
 	    var tickets = ticketRepo.findAll();
-	    if(role == "support") {
+	    if(role.equals("support")) {
+	    }
+	    else {
 	    	tickets = tickets.stream()
-	    			.filter(ticket -> ticket.getCreerPar().equals("support"))
+	    			.filter(ticket -> ticket.getCreerPar().equals(mail))
 	    			.toList();
 	    }
 	    return tickets.stream()
